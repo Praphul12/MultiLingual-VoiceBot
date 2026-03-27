@@ -7,12 +7,11 @@ A voice-first RAG chatbot that answers questions about Indian government schemes
 ## Table of Contents
 
 1. [Architecture Overview](#architecture-overview)
-2. [Component Decisions](#component-decisions)
-3. [Confidence & Anti-Hallucination](#confidence--anti-hallucination)
-4. [Project Structure](#project-structure)
-5. [Setup](#setup)
-6. [Running with Docker](#running-with-docker)
-7. [Environment Variables](#environment-variables)
+2. [Confidence & Anti-Hallucination](#confidence--anti-hallucination)
+3. [Project Structure](#project-structure)
+4. [Setup](#setup)
+5. [Running with Docker](#running-with-docker)
+6. [Environment Variables](#environment-variables)
 
 ---
 
@@ -61,39 +60,6 @@ Audio Input
               ▼
         Audio + Text Response
 ```
-
----
-
-## Component Decisions
-
-### Embedding Model: `l3cube-pune/indic-sentence-bert-nli`
-Chosen over `ai4bharat/indic-bert` (base ALBERT, no pooling layer — cannot produce sentence embeddings) and `paraphrase-multilingual-mpnet-base-v2` (not retrieval-optimised, low similarity scores ~0.29). The L3Cube model is fine-tuned with Sentence-BERT methodology on NLI data specifically for Indian languages, mapping English, Hindi, and Punjabi into a shared semantic space for cross-lingual retrieval without translation.
-
-### Cross-Lingual Retrieval: ID-based lookup
-Rejected the approach of translating the query into all three languages and running three separate FAISS queries. The cross-lingual embedding model already handles language differences at retrieval time. Once the right scheme IDs are identified, all language versions are fetched directly from the source data — no translation errors, no extra latency.
-
-### STT: OpenAI Whisper (medium)
-Chosen over `ai4bharat/indic-conformer-600m-multilingual`, which has no English language mask (English queries fail entirely) and whose LID mode does not exist in the deployed model. Whisper handles Hindi, Punjabi, English, and Hinglish in one model with zero-cost automatic language detection.
-
-### Vector Store: FAISS
-Chosen over manual NumPy cosine similarity, which requires storing all vectors in memory and recomputing on every query. FAISS provides optimised similarity search via LangChain's `Retriever` interface, making it easy to swap backends (Chroma, Pinecone) later.
-
-### LLM: Groq API (Llama 3.1 8B)
-Replaced self-hosted open-source models (Airavata/Mistral-7B) due to:
-- Airavata: gated repo access required
-- Mistral-7B: 14 GB download, OOM on CPU inference
-- Phi-3-mini: meta-device errors with `device_map="auto"`
-
-Groq provides sub-second inference with no local GPU requirement. `llama-3.1-8b-instant` is sufficient for extractive QA over short retrieved context.
-
-### Translation: Google Translate (`deep-translator`)
-Chosen over `ai4bharat/indictrans2-indic-en-dist-200M` (IndicTrans2), which requires a Cython extension that fails to build on Windows and whose custom tokenizer is incompatible with newer `transformers` versions. For short queries and answers, Google Translate quality is sufficient.
-
-### TTS Backend: Facebook MMS-VITS (default)
-Parler-TTS (`ai4bharat/indic-parler-tts`) is autoregressive and takes 3–4 minutes on CPU. MMS-VITS is non-autoregressive and generates speech in seconds. Both backends are kept in `TTS/pipeline.py` switchable via a single `BACKEND` flag.
-
-### Per-Language Chunking
-Each scheme is chunked separately per language rather than joining all three into one document. Joining dilutes the embedding — the vector becomes a mix of three languages and does not represent any one well. Separate per-language chunks with a shared `id` metadata field enable ID-based cross-language lookup after retrieval.
 
 ---
 
