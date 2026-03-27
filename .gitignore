@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info/
+
+# Virtual environments
+.venv/
+
+# Environment variables (contains API keys)
+.env
+
+# Model weights downloaded at runtime
+models/
+_indictrans_src/
+
+# Audio files
+*.wav
+*.ogg
+*.mp3
+*.flac
+
+# HuggingFace / Torch cache (large, downloaded at runtime)
+.cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code internal files
+.claude/
+
+# IDE
+.vscode/
+.idea/
+
+# PDFs / personal docs
+*.pdf

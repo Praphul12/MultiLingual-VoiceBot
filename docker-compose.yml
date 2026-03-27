@@ -1,0 +1,20 @@
+services:
+  voicebot:
+    build: .
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    volumes:
+      # Persist downloaded model weights across container restarts
+      - hf_cache:/root/.cache/huggingface
+      - whisper_cache:/root/.cache/whisper
+      - torch_cache:/root/.cache/torch
+    restart: unless-stopped
+    # Increase shared memory for PyTorch DataLoader workers
+    shm_size: "2gb"
+
+volumes:
+  hf_cache:
+  whisper_cache:
+  torch_cache:

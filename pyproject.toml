@@ -1,0 +1,36 @@
+[project]
+name = "voicebot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "accelerate>=1.13.0",
+    "anthropic>=0.86.0",
+    "chardet>=7.3.0",
+    "deep-translator>=1.11.4",
+    "dotenv>=0.9.9",
+    "edge-tts>=7.2.8",
+    "faiss-cpu>=1.13.2",
+    "groq>=1.1.2",
+    "huggingface>=0.0.1",
+    "indic-nlp-library-itt>=0.1.1",
+    "langchain>=1.2.13",
+    "langchain-community>=0.4.1",
+    "langchain-huggingface>=1.2.1",
+    "langchain-text-splitters>=1.1.1",
+    "onnxruntime>=1.24.4",
+    "openai-whisper>=20250625",
+    "path>=17.1.1",
+    "pydub>=0.25.1",
+    "sacremoses>=0.1.1",
+    "sentence-transformers==3.3.1",
+    "sentencepiece>=0.2.1",
+    "soundfile>=0.13.1",
+    "streamlit>=1.55.0",
+    "tokenizer>=3.6.2",
+    "torch>=2.11.0",
+    "torchaudio>=2.11.0",
+    "torchcodec>=0.11.0",
+    "transformers==4.46.1",
+]
