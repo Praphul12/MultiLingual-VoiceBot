@@ -69,8 +69,8 @@ def process_turn(audio_bytes: bytes, chunks, retriever):
             answer = translate_from_english(answer_en, lang)
 
             st.write("🔊 Synthesizing speech...")
-            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as out_f:
-                out_path = out_f.name
+            out_fd, out_path = tempfile.mkstemp(suffix=".wav")
+            os.close(out_fd)  # release the handle so synthesize() can write to it
             synthesize(answer, lang, out_path)
             with open(out_path, "rb") as f:
                 audio_out = f.read()
