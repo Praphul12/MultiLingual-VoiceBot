@@ -7,13 +7,12 @@ A voice-first RAG chatbot that answers questions about Indian government schemes
 ## Table of Contents
 
 1. [Architecture Overview](#architecture-overview)
-2. [Pipeline Flow](#pipeline-flow)
-3. [Component Decisions](#component-decisions)
-4. [Confidence & Anti-Hallucination](#confidence--anti-hallucination)
-5. [Project Structure](#project-structure)
-6. [Setup](#setup)
-7. [Running with Docker](#running-with-docker)
-8. [Environment Variables](#environment-variables)
+2. [Component Decisions](#component-decisions)
+3. [Confidence & Anti-Hallucination](#confidence--anti-hallucination)
+4. [Project Structure](#project-structure)
+5. [Setup](#setup)
+6. [Running with Docker](#running-with-docker)
+7. [Environment Variables](#environment-variables)
 
 ---
 
@@ -62,36 +61,6 @@ Audio Input
               ▼
         Audio + Text Response
 ```
-
----
-
-## Pipeline Flow
-
-### 1. Speech-to-Text (STT)
-Whisper `medium` model runs **twice** for non-English audio:
-- `task="translate"` → English transcription used by the LLM and cross-encoder
-- `task="transcribe"` → Native language transcription displayed to the user and used for FAISS retrieval
-
-Automatic language detection (`result["language"]`) removes the need for a separate language identification step.
-
-### 2. Retrieval (FAISS + Cross-Encoder)
-The vector store contains chunks from a CSV of 50 Indian government schemes, stored in three languages (English, Hindi, Punjabi). Each chunk is prefixed with its scheme name to ensure name-based queries (e.g. "PM Jan Dhan Yojana") match correctly.
-
-FAISS is queried with both the English query and the native query. Candidates are merged and filtered to English chunks only before the cross-encoder re-ranks them. Confidence scores are min-max normalised within the batch so the top scheme always approaches 100% and lower-ranked schemes are shown relative to it.
-
-### 3. Generation (LLM)
-Groq's Llama 3.1 8B (`llama-3.1-8b-instant`) receives English-only context from the top-5 retrieved schemes plus the full conversation history. The system prompt enforces:
-- JSON output: `{"answer": "...", "confidence": 0–100, "grounded": true/false}`
-- Answer limited to facts explicitly stated in context
-- Confidence penalised if `grounded=false`
-
-### 4. Translation
-`deep-translator` (Google Translate) translates the English answer back to the detected language. Skipped entirely for English queries.
-
-### 5. Text-to-Speech (TTS)
-Two backends are available, switchable via `BACKEND` in `TTS/pipeline.py`:
-- **VITS** (default): `facebook/mms-tts-{hin,pan,eng}` — non-autoregressive, seconds on CPU
-- **Parler**: `ai4bharat/indic-parler-tts` — higher quality, requires GPU
 
 ---
 
